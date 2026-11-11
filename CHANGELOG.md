@@ -1,5 +1,9 @@
 # 变更日志
 
+## 2026-11-11（前端：移除顶部智商测试横幅，导航菜单居中）
+
+- 2026-11-11：按反馈做两处前端调整。① 全站移除最上方「🧠 儿童智商测试」细横幅：删掉 `index.html`、`explore/index.html`、`diagnose/index.html`、`children/index.html`、`children/history.html` 里的 `a.top-banner` 及 `assets/site.css` 的横幅样式、`assets/explore.css` 的选择器引用；首页 `a.iq-card` 卡片和诊断结果页底部 `#iq-line` 入口保留。`scripts/screenshot.js` 的 `TOP_BANNER_EXPR` 改为验证横幅无残留，41/42 两张横幅截图及其说明取消，陈旧截图删除。② 导航菜单居中：`assets/site.css` 新增两段媒体查询——721–1535px 时 `.site-nav` 换到品牌下方一行并水平居中（原先是左对齐或右侧贴边）；≥1536px 时 `.site-header` 改三列 grid（`minmax(0,1fr) auto minmax(0,1fr)`），菜单在整页宽度上真正居中、品牌保持左侧。用无头 Edge 逐档实测 1920/1600/1536/1440/1366/1280/1200/1024/768/375：宽屏下菜单左右边距对称（如 1920 时左 463 / 右 463），窄屏第二行居中，375 移动端布局不变，无横向溢出、品牌与菜单无重叠。首页 `sw.js` 缓存列表未变且资源为 network-first，不 bump 版本。仅本地变更，未推送、未部署。
+
 ## 2026-11-11（七上英语：官方阅读器改挂四个语音点）
 
 - 2026-11-11：在国家中小学智慧教育平台核人教版2022课标修订《英语 七年级上册》（ISBN 978-7-107-38254-3）和《英语 七年级下册》（ISBN 978-7-107-38255-0）官方阅读器后，把已核对的四个语音点改挂到对应单元：`cne_j001` 单词重音到第2单元 We're Family!（第3单元还有 Word stress (2)），`cne_j098` 连读到第4单元 My Favourite Subject，`cne_j107` 不完全爆破到第5单元 Fun Clubs，`cne_j002` 句末升降调到第7单元 Happy Birthday!。删除与官方课序相反的硬先修 `cne_j098`←`cne_j002`。`cne_j010` 词尾 -s 读音和 `cne_j053`–`cne_j056` 交通四点仍挂「七年级上册 待核」，不按旧版七下 How do you get to school 改挂，也不删除。题目、稳定 id、课标 `verbatim` 和 `standards.confidence` 未改。`sw.js` 仍为 v14。仅本地变更，未推送、未部署。详见 `docs/english-g7-official-reader-20261111.md`。

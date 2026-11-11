@@ -13,8 +13,7 @@
  *      检查局部图、无横向溢出、无外网脚本/样式/字体/图片请求，并截 06–16；
  *   4) 知识图谱「全部」祖先（cnm_234：默认按年级收起，再展开并对准当前点）、375 宽长名称（cnm_124）
  *      以及 375 宽诊断路径图，截 17–20。
- *      首页儿童智商测试卡片截 36，诊断结果页底部入口截 37。
- *      全站顶部横幅：1280 首页顶部截 41-top-banner.png，375 截 42-top-banner-375.png。
+ *      首页儿童智商测试卡片截 36，诊断结果页底部入口截 37。2026-11-11 起顶部横幅移除，41/42 截图取消。
  *      诊断分享图：数学（五年级上册）存 38-share-math.png，英语（现在进行时）存 39-share-en.png，
  *      375 宽弹层存 40-share-modal-375.png，并用 jsQR 解码图中二维码。
  *      小学英语图谱与四年级上册诊断截 32–35。初中英语「现在完成时」截 43–44，
@@ -52,42 +51,11 @@ const N_EDGES = String(DEP_ROWS.filter((d) => String(d.topicId).startsWith('cnm_
 const N_QUESTIONS = String(QUESTION_ROWS.filter((q) => String(q.topicId).startsWith('cnm_')).length);
 const N_STANDARDS = String(STD_ITEMS.filter((it) => String(it.id).startsWith('cms-')).length);
 const N_GRADE_CARDS = 14;
+// 2026-11-11：顶部横幅已全站移除，这里只验证没有残留。
 const TOP_BANNER_EXPR = `(() => {
   const a = document.querySelector('a.top-banner');
-  if (!a) return 'missing';
-  const rel = (a.getAttribute('rel') || '').split(/\\s+/);
-  const text = (a.textContent || '').replace(/\\s+/g, ' ').trim();
-  if (a.getAttribute('href') !== 'https://test.pansgo.com/?from=math-top') return 'href';
-  if (a.target !== '_blank') return 'target';
-  if (rel.indexOf('noopener') < 0) return 'rel';
-  if (text !== '🧠 儿童智商测试') return 'text:' + text;
-  const header = document.querySelector('.site-header');
-  if (!header || (a.compareDocumentPosition(header) & Node.DOCUMENT_POSITION_PRECEDING)) return 'order';
-  const ar = a.getBoundingClientRect();
-  const hr = header.getBoundingClientRect();
-  if (ar.top > 1) return 'not-top:' + Math.round(ar.top);
-  if (ar.bottom > hr.top + 1) return 'overlap-nav';
-  const cs = getComputedStyle(a);
-  const lh = parseFloat(cs.lineHeight);
-  const range = document.createRange();
-  range.selectNodeContents(a);
-  const rh = range.getBoundingClientRect().height;
-  if (!(lh > 0) || rh > lh * 1.45) return 'wrap:' + Math.round(rh) + '/' + lh;
-  const probe = document.createElement('span');
-  probe.textContent = a.textContent;
-  probe.style.cssText = 'position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;font:' + cs.font;
-  document.body.appendChild(probe);
-  const textW = probe.getBoundingClientRect().width;
-  probe.remove();
-  const innerW = a.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  if (textW > innerW + 1) return 'clip:' + Math.round(textW) + '/' + Math.round(innerW);
-  const navLinks = document.querySelectorAll('.site-nav a');
-  for (let i = 0; i < navLinks.length; i++) {
-    if (navLinks[i].getBoundingClientRect().height + 0.5 < 44) return 'nav-short';
-  }
-  const card = document.querySelector('a.iq-card');
-  if (card && card.getAttribute('href') !== 'https://test.pansgo.com/?from=math-home') return 'card-href';
-  return 'ok';
+  if (!a) return 'ok';
+  return 'still-there:' + (a.textContent || '').trim();
 })()`;
 const IQ_HOME_EXPR = `(() => {
   const a = document.querySelector('a.iq-card');
@@ -398,7 +366,7 @@ async function main() {
     };
     const checkBanner = async (label) => {
       const banner = await evalJs(TOP_BANNER_EXPR);
-      check(banner === 'ok', label + ' 顶部横幅（' + banner + '）');
+      check(banner === 'ok', label + ' 顶部横幅已移除（' + banner + '）');
     };
     const NODE_METRICS_JS = `
       let tall = 0, spill = 0, uncut = 0, overlap = 0, primary = 0, junior = 0, senior = 0, grades = 0;
@@ -637,7 +605,6 @@ async function main() {
     await checkPage('首页 1280');
     await shot('06-home.png', null, 1900);
     await shot('36-home-iq.png', 'a.iq-card', 280);
-    await shot('41-top-banner.png', null, 280);
 
     const checkExplore = async (id, expect) => {
       await goto(BASE + '/explore/#' + encodeURIComponent(id));
@@ -721,7 +688,6 @@ async function main() {
     await checkBanner('首页 375');
     await checkPage('首页 375');
     await shot('10-home-375.png', null, 2900);
-    await shot('42-top-banner-375.png', null, 420);
     await checkExplore('cnm_221', { title: '配方法', idCode: 'cnm_221', diag: 'cnm_221' });
     await checkBanner('图谱 375');
     await shot('11-explore-221-375.png', null, 1100);
