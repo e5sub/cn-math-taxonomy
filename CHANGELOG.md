@@ -1,5 +1,9 @@
 # 变更日志
 
+## 2026-11-11（安卓：App 定名「知根知径」，换站点绿色文档图标）
+
+- 2026-11-11：APK 定名「知根知径」（谐音「知根知底」：根是薄弱根因，径是学习路径），`apk.yml` 的 `appName` 由「知识图谱」改之，包名仍为 `com.pansgo.graph`。启动图标换成站点那枚墨绿文档＋学习路径箭头：把 `assets/icons/icon-512.png` 放大成 1024×1024 存为 `assets/logo.png` 作源图，`apk.yml` 新增一步 `npx capacitor-assets generate --android --iconBackgroundColor '#0f6e62' --iconBackgroundColorDark '#0b4d44'`（在 `cap add android` 之后跑），生成全套 mipmap 启动图标和明暗两组启动屏。本地已实跑 `cap add` + `capacitor-assets` 预览，方形/圆形启动图标均完整清晰。本地预览产物 `android/`、`www/`、`capacitor.config.json` 已清理并加进 `.gitignore`；`assets/logo.png` 入库（网页端也会带上，无副作用）。
+
 ## 2026-11-11（安卓：GitHub Actions 打包 APK）
 
 - 2026-11-11：新增 `.github/workflows/apk.yml`，用 Capacitor 7 把站点打包成安卓 APK。触发方式：Actions 页手动 Run workflow，或推 `v*` 标签。构建流程：ubuntu-latest（Node 22 + JDK 17）→ 把 `index.html`、`manifest.webmanifest`、`sw.js` 和 `assets/`、`data/`、`children/`、`diagnose/`、`explore/` 复制进 `www/` → 安装 `@capacitor/core@^7`、`@capacitor/cli@^7`、`@capacitor/android@^7` → 写 `capacitor.config.json`（appId `com.pansgo.graph`，appName「知识图谱」，`server.url` 设为 `https://iq.071717.xyz`，应用打开即加载线上站点，站点自带 Service Worker 管离线；站外链接由 Capacitor 默认跳系统浏览器）→ `npx cap add android` + `npx cap sync android` → `./gradlew assembleDebug` → 用 `actions/upload-artifact@v4` 上传 `zhishitupu-debug-apk`（Debug 签名，可直接安装）。`android/`、`node_modules/` 只在 CI 里生成，不入库。APK 图标暂为 Capacitor 默认图标，未做启动图与正式签名（release 签名、自定义图标待后续）。`tests/test_ci_workflow.js` 只读 `ci.yml`，新增工作流不影响；本地已重跑该测试通过。

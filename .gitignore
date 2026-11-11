@@ -11,3 +11,8 @@ __pycache__/
 PROMPT*.md
 chain.sh
 .cf-token-workers
+
+# APK 本地预览产物（CI 才生成）
+/android/
+/www/
+capacitor.config.json

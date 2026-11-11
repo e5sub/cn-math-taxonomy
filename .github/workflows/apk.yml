@@ -36,14 +36,14 @@ jobs:
           cp -r assets data children diagnose explore www/
 
       - name: 安装 Capacitor
-        run: npm install --no-fund --no-audit @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
+        run: npm install --no-fund --no-audit @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7 @capacitor/assets@^3
 
       - name: 写 Capacitor 配置（应用默认打开 https://iq.071717.xyz）
         run: |
           cat > capacitor.config.json <<'JSON'
           {
             "appId": "com.pansgo.graph",
-            "appName": "知识图谱",
+            "appName": "知根知径",
             "webDir": "www",
             "server": {
               "url": "https://iq.071717.xyz"
@@ -55,6 +55,9 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: 用站点绿色文档图标生成安卓启动图标
+        run: npx capacitor-assets generate --android --iconBackgroundColor '#0f6e62' --iconBackgroundColorDark '#0b4d44'
 
       - name: 构建 Debug APK
         run: |
