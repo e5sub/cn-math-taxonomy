@@ -2,6 +2,8 @@
 
 ## 2026-11-11（安卓：App 定名「知根知径」，换站点绿色文档图标）
 
+- 2026-11-11：修 APK 打包失败：`:capacitor-android:compileDebugJavaWithJavac` 报 `invalid source release: 21`，原因是 Capacitor 7 的安卓库要用 JDK 21 编译而工作流装的是 17。`apk.yml` 的 `actions/setup-java` 改为 temurin 21。
+
 - 2026-11-11：APK 定名「知根知径」（谐音「知根知底」：根是薄弱根因，径是学习路径），`apk.yml` 的 `appName` 由「知识图谱」改之，包名仍为 `com.pansgo.graph`。启动图标换成站点那枚墨绿文档＋学习路径箭头：把 `assets/icons/icon-512.png` 放大成 1024×1024 存为 `assets/logo.png` 作源图，`apk.yml` 新增一步 `npx capacitor-assets generate --android --iconBackgroundColor '#0f6e62' --iconBackgroundColorDark '#0b4d44'`（在 `cap add android` 之后跑），生成全套 mipmap 启动图标和明暗两组启动屏。本地已实跑 `cap add` + `capacitor-assets` 预览，方形/圆形启动图标均完整清晰。本地预览产物 `android/`、`www/`、`capacitor.config.json` 已清理并加进 `.gitignore`；`assets/logo.png` 入库（网页端也会带上，无副作用）。
 
 ## 2026-11-11（安卓：GitHub Actions 打包 APK）
