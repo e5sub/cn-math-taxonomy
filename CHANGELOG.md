@@ -1,5 +1,9 @@
 # 变更日志
 
+## 2026-11-11（安卓：GitHub Actions 打包 APK）
+
+- 2026-11-11：新增 `.github/workflows/apk.yml`，用 Capacitor 7 把站点打包成安卓 APK。触发方式：Actions 页手动 Run workflow，或推 `v*` 标签。构建流程：ubuntu-latest（Node 22 + JDK 17）→ 把 `index.html`、`manifest.webmanifest`、`sw.js` 和 `assets/`、`data/`、`children/`、`diagnose/`、`explore/` 复制进 `www/` → 安装 `@capacitor/core@^7`、`@capacitor/cli@^7`、`@capacitor/android@^7` → 写 `capacitor.config.json`（appId `com.pansgo.graph`，appName「知识图谱」，`server.url` 设为 `https://iq.071717.xyz`，应用打开即加载线上站点，站点自带 Service Worker 管离线；站外链接由 Capacitor 默认跳系统浏览器）→ `npx cap add android` + `npx cap sync android` → `./gradlew assembleDebug` → 用 `actions/upload-artifact@v4` 上传 `zhishitupu-debug-apk`（Debug 签名，可直接安装）。`android/`、`node_modules/` 只在 CI 里生成，不入库。APK 图标暂为 Capacitor 默认图标，未做启动图与正式签名（release 签名、自定义图标待后续）。`tests/test_ci_workflow.js` 只读 `ci.yml`，新增工作流不影响；本地已重跑该测试通过。
+
 ## 2026-11-11（前端：移除顶部智商测试横幅，导航菜单居中）
 
 - 2026-11-11：按反馈做两处前端调整。① 全站移除最上方「🧠 儿童智商测试」细横幅：删掉 `index.html`、`explore/index.html`、`diagnose/index.html`、`children/index.html`、`children/history.html` 里的 `a.top-banner` 及 `assets/site.css` 的横幅样式、`assets/explore.css` 的选择器引用；首页 `a.iq-card` 卡片和诊断结果页底部 `#iq-line` 入口保留。`scripts/screenshot.js` 的 `TOP_BANNER_EXPR` 改为验证横幅无残留，41/42 两张横幅截图及其说明取消，陈旧截图删除。② 导航菜单居中：`assets/site.css` 新增两段媒体查询——721–1535px 时 `.site-nav` 换到品牌下方一行并水平居中（原先是左对齐或右侧贴边）；≥1536px 时 `.site-header` 改三列 grid（`minmax(0,1fr) auto minmax(0,1fr)`），菜单在整页宽度上真正居中、品牌保持左侧。用无头 Edge 逐档实测 1920/1600/1536/1440/1366/1280/1200/1024/768/375：宽屏下菜单左右边距对称（如 1920 时左 463 / 右 463），窄屏第二行居中，375 移动端布局不变，无横向溢出、品牌与菜单无重叠。首页 `sw.js` 缓存列表未变且资源为 network-first，不 bump 版本。仅本地变更，未推送、未部署。

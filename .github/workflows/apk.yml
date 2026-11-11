@@ -1,0 +1,70 @@
+name: Build Android APK
+
+# 手动触发（Actions 页 Run workflow），或推 v* 标签时打包。
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: 打包安卓 APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 安装 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: 组装网页资源到 www/
+        run: |
+          mkdir -p www
+          cp index.html manifest.webmanifest sw.js www/
+          cp -r assets data children diagnose explore www/
+
+      - name: 安装 Capacitor
+        run: npm install --no-fund --no-audit @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
+
+      - name: 写 Capacitor 配置（应用默认打开 https://iq.071717.xyz）
+        run: |
+          cat > capacitor.config.json <<'JSON'
+          {
+            "appId": "com.pansgo.graph",
+            "appName": "知识图谱",
+            "webDir": "www",
+            "server": {
+              "url": "https://iq.071717.xyz"
+            }
+          }
+          JSON
+
+      - name: 生成并同步 Android 工程
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: 构建 Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: 上传 APK 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhishitupu-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
