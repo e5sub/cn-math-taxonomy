@@ -717,9 +717,10 @@ test('英语：小学 197、初中 180–260、高中 220–320，不与数学�
   assert.strictEqual(en8.label, '八年级上册');
   assert.ok(en8.ids.length > 0 && en8.ids.every((id) => id.startsWith('cne_j') && RG.byId[id].grade === 8 && RG.byId[id].semester === '上'));
   assert.ok(E.gradeTargets(RG, '八上').ids.every((id) => id.startsWith('cnm_')));
-  const en9 = E.gradeTargets(RG, '九全', 'english');
-  assert.strictEqual(en9.label, '九年级全一册');
-  assert.ok(en9.ids.length > 0 && en9.ids.every((id) => id.startsWith('cne_j') && RG.byId[id].grade === 9 && RG.byId[id].semester === '全'));
+  const en9 = E.gradeTargets(RG, '九上', 'english');
+  assert.strictEqual(en9.label, '九年级上册');
+  assert.ok(en9.ids.length > 0 && en9.ids.every((id) => id.startsWith('cne_j') && RG.byId[id].grade === 9 && RG.byId[id].semester === '上'));
+  assert.strictEqual(E.gradeTargets(RG, '九全', 'english'), null);
   const enGrade9 = E.gradeTargets(RG, '九年级', 'english');
   assert.ok(enGrade9.volumes.indexOf('九全') >= 0 && enGrade9.ids.every((id) => id.startsWith('cne_')));
   const mathGrade9 = E.gradeTargets(RG, '九年级');
@@ -734,7 +735,14 @@ test('英语：小学 197、初中 180–260、高中 220–320，不与数学�
   );
   const en7 = E.gradeTargets(RG, '七上', 'english');
   assert.ok(en7.ids.indexOf('cne_j001') >= 0);
-  assert.strictEqual(en7.ids.filter((id) => RG.byId[id].chapter === '七年级上册 待核').length, 5);
+  assert.strictEqual(en7.ids.filter((id) => RG.byId[id].chapter === '七年级上册 待核').length, 4);
+  assert.deepStrictEqual(
+    E.parseChapter('七年级下册 待核'),
+    { volume: '七下', chapterNo: '待核', chapterName: '未挂到具体单元', section: '' }
+  );
+  const en7b = E.gradeTargets(RG, '七下', 'english');
+  const pending7b = en7b.ids.filter((id) => RG.byId[id].chapter === '七年级下册 待核').sort();
+  assert.deepStrictEqual(pending7b, ['cne_j097']);
   assert.deepStrictEqual(
     E.parseChapter('必修第一册 欢迎单元 Welcome Unit'),
     { volume: '必修一', chapterNo: '欢迎单元', chapterName: 'Welcome Unit', section: '' }
@@ -983,7 +991,9 @@ test('真实数据：诊断题答案能被自己的判题器接受（判对率�
 test('真实数据：章节名可解析', () => {
   formal.forEach((t) => {
     const c = E.parseChapter(t.chapter);
-    assert.ok(c.volume && c.chapterNo && c.chapterName, t.chapter);
+    assert.ok(c.volume && c.chapterNo, t.chapter);
+    // 必修一绪言没有「第×章」后面的章名。其余正式点仍要有章名。
+    if (t.chapter !== '必修一 绪言') assert.ok(c.chapterName, t.chapter);
   });
 });
 
@@ -1078,7 +1088,7 @@ test('题库：初中地理有内联示意图', () => {
 });
 
 test('题库：初中化学有内联示意图', () => {
-  const chem = questions.filter((q) => String(q.topicId || '').startsWith('cnk_') && q.figure);
+  const chem = questions.filter((q) => String(q.topicId || '').startsWith('cnk_j') && q.figure);
   assert.ok(chem.length >= 35 && chem.length <= 50, '化学配图题数 ' + chem.length);
   ['cnk_j010_q1', 'cnk_j007_q2', 'cnk_j024_q1'].forEach((id) => {
     const q = questions.find((item) => item.id === id);
@@ -1536,6 +1546,37 @@ test('gradeTargets：一年级 = 一上 + 一下，七上只含七上；写法�
   assert.strictEqual(g9chemYear.ids.length, 45);
   assert.ok(g9chemYear.ids.every((id) => id.startsWith('cnk_') && RGQ.byId[id].grade === 9));
   assert.strictEqual(E.subjectOf(RGQ.byId[g9chem.ids[0]]), 'chemistry');
+  const chemHs = topics.filter((t) => /^cnk_h\d/.test(String(t.id)));
+  assert.strictEqual(chemHs.length, 19);
+  assert.deepStrictEqual(chemHs.map((t) => t.id), Array.from({ length: 19 }, (_, i) => 'cnk_h' + String(i + 1).padStart(3, '0')));
+  chemHs.forEach((t) => {
+    assert.strictEqual(t.subject, 'chemistry');
+    assert.strictEqual(t.grade, 10);
+    assert.strictEqual(t.semester, '上');
+    assert.strictEqual(t.external, false);
+    assert.ok(String(t.chapter).indexOf('必修一') === 0, t.id);
+  });
+  const chemB1 = E.gradeTargets(RGQ, '必修一', 'chemistry');
+  assert.strictEqual(chemB1.label, '必修一（必修第一册）');
+  assert.deepStrictEqual(chemB1.ids, chemHs.map((t) => t.id));
+  chemB1.ids.forEach((id) => {
+    assert.ok(id.startsWith('cnk_h') && RGQ.byId[id].grade === 10, id);
+  });
+  assert.deepStrictEqual(E.gradeTargets(RGQ, '必修第一册', 'chemistry').ids, chemB1.ids);
+  assert.strictEqual(E.gradeTargets(RGQ, '必修一'), null);
+  assert.deepStrictEqual(E.parseChapter('必修一 绪言'), { volume: '必修一', chapterNo: '绪言', chapterName: '', section: '' });
+  assert.deepStrictEqual(E.parseChapter('必修一 第三章 铁 金属材料 3.1'), {
+    volume: '必修一', chapterNo: '第三章', chapterName: '铁 金属材料', section: '3.1'
+  });
+  assert.deepStrictEqual(E.parseChapter('必修一 第四章 物质结构 元素周期律 整理与提升'), {
+    volume: '必修一', chapterNo: '第四章', chapterName: '物质结构 元素周期律', section: '整理与提升'
+  });
+  assert.deepStrictEqual(E.parseChapter('必修一 第四章 物质结构 元素周期律 实验活动3'), {
+    volume: '必修一', chapterNo: '第四章', chapterName: '物质结构 元素周期律', section: '实验活动3'
+  });
+  assert.deepStrictEqual(E.parseChapter('必修一 第一章 运动的描述 1.1'), {
+    volume: '必修一', chapterNo: '第一章', chapterName: '运动的描述', section: '1.1'
+  });
   assert.ok(E.gradeTargets(RGQ, '九上').ids.every((id) => id.startsWith('cnm_')));
   const g7 = E.gradeTargets(RGQ, '七年级');
   assert.strictEqual(g7.ids.length, formal.filter((t) => t.grade === 7 && String(t.id).startsWith('cnm_')).length);
