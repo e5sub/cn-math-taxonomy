@@ -31,6 +31,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: 安装 Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: 生成知识点静态页与 sitemap
+        run: node scripts/gen-kp-pages.mjs --out .
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

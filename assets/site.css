@@ -483,11 +483,16 @@ body:not(.page-explore) .site-header {
 .nav-link.resource-search-btn:hover { background: var(--brand-soft); color: var(--brand-strong); }
 .resource-search-ico { width: 14px; height: 14px; flex: none; }
 .resource-search-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* 中等宽度：菜单换到品牌下方一行并居中；宽屏：单行真正页面居中。 */
-@media (min-width: 721px) and (max-width: 1535px) {
+/* 菜单已有 18 个入口，单行居中要 1900px 以上才放得下：中等宽度换到品牌下方一行居中，宽屏才单行页面居中。 */
+@media (min-width: 721px) and (max-width: 1899px) {
   .site-nav { flex: 1 1 100%; justify-content: center; }
 }
-@media (min-width: 1536px) {
+@media (min-width: 721px) and (max-width: 1439px) {
+  .site-nav { gap: 6px 10px; }
+  .nav-link { padding: 0 9px; }
+  .nav-link.subject-link { padding: 0 10px; }
+}
+@media (min-width: 1900px) {
   .site-header { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
   .brand { justify-self: start; }
   .site-nav { justify-self: center; }

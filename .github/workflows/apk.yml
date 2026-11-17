@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir -p www
           cp index.html manifest.webmanifest sw.js www/
-          cp -r assets data children diagnose explore www/
+          cp -r assets data children diagnose explore goods wrongbook www/
 
       - name: 安装 Capacitor
         run: npm install --no-fund --no-audit @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7 @capacitor/assets@^3
